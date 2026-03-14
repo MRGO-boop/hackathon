@@ -1,0 +1,9 @@
+sqlalchemy==2.0.23
+alembic==1.13.1
+psycopg2-binary==2.9.9
+python-dotenv==1.0.0
+bcrypt==4.1.2
+hypothesis==6.92.1
+pytest==7.4.3
+flask==3.0.0
+flask-cors==4.0.0

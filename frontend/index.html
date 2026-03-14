@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoreInventory - Inventory Management System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="screen active">
+        <div class="login-container">
+            <h1>CoreInventory</h1>
+            <p class="subtitle">Inventory Management System</p>
+            
+            <div class="login-form">
+                <input type="email" id="loginEmail" placeholder="Email" required>
+                <input type="password" id="loginPassword" placeholder="Password" required>
+                <button onclick="login()" class="btn-primary">Login</button>
+                <p class="link" onclick="showSignup()">Don't have an account? Sign up</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signup Screen -->
+    <div id="signupScreen" class="screen">
+        <div class="login-container">
+            <h1>Create Account</h1>
+            <p class="subtitle">Join CoreInventory</p>
+            
+            <div class="login-form">
+                <input type="text" id="signupName" placeholder="Full Name" required>
+                <input type="email" id="signupEmail" placeholder="Email" required>
+                <input type="password" id="signupPassword" placeholder="Password" required>
+                <button onclick="signup()" class="btn-primary">Sign Up</button>
+                <p class="link" onclick="showLogin()">Already have an account? Login</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="dashboardScreen" class="screen">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+                <h1>CoreInventory</h1>
+                <div class="user-menu">
+                    <span id="userName">User</span>
+                    <button class="user-avatar" onclick="toggleUserMenu()">👤</button>
+                </div>
+            </div>
+            
+            <!-- User Menu Dropdown -->
+            <div id="userMenuDropdown" class="user-menu-dropdown">
+                <div class="user-info">
+                    <div class="user-avatar-large">👤</div>
+                    <div class="user-details">
+                        <p class="user-name" id="userNameDropdown">User</p>
+                        <p class="user-email" id="userEmailDropdown">user@example.com</p>
+                    </div>
+                </div>
+                <div class="user-menu-divider"></div>
+                <button class="user-menu-item" onclick="showAccountSettings()">⚙️ Account Settings</button>
+                <button class="user-menu-item" onclick="logout()" style="color: var(--danger);">🚪 Logout</button>
+            </div>
+        </header>
+
+        <!-- Main Container with Sidebar -->
+        <div class="main-container">
+            <!-- Sidebar Navigation -->
+            <nav class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <h3>Menu</h3>
+                    <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
+                </div>
+                <button onclick="showTab('dashboard')" class="nav-btn active" data-tab="dashboard">📊 Dashboard</button>
+                <button onclick="showTab('products')" class="nav-btn" data-tab="products">📦 Products</button>
+                <button onclick="showTab('locations')" class="nav-btn" data-tab="locations">📍 Locations</button>
+                <button onclick="showTab('receipts')" class="nav-btn" data-tab="receipts">📥 Receipts</button>
+                <button onclick="showTab('deliveries')" class="nav-btn" data-tab="deliveries">📤 Deliveries</button>
+                <button onclick="showTab('transfers')" class="nav-btn" data-tab="transfers">🔄 Transfers</button>
+                <button onclick="showTab('history')" class="nav-btn" data-tab="history">📋 History</button>
+            </nav>
+
+            <!-- Content Area -->
+            <div class="content-area">
+
+        <!-- Dashboard Tab -->
+        <div id="dashboardTab" class="tab-content active">
+            <h2>Dashboard</h2>
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <h3 id="totalProducts">0</h3>
+                    <p>Total Products</p>
+                </div>
+                <div class="kpi-card warning">
+                    <h3 id="lowStockProducts">0</h3>
+                    <p>Low Stock Products</p>
+                </div>
+                <div class="kpi-card danger">
+                    <h3 id="zeroStockProducts">0</h3>
+                    <p>Zero Stock Products</p>
+                </div>
+                <div class="kpi-card">
+                    <h3 id="pendingReceipts">0</h3>
+                    <p>Pending Receipts</p>
+                </div>
+                <div class="kpi-card">
+                    <h3 id="pendingDeliveries">0</h3>
+                    <p>Pending Deliveries</p>
+                </div>
+                <div class="kpi-card">
+                    <h3 id="pendingTransfers">0</h3>
+                    <p>Pending Transfers</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Tab -->
+        <div id="productsTab" class="tab-content">
+            <div class="tab-header">
+                <h2>Products</h2>
+                <button onclick="showAddProduct()" class="btn-primary">+ Add Product</button>
+            </div>
+            
+            <!-- Filters and Sorting -->
+            <div class="filters-bar">
+                <input type="text" id="productSearch" placeholder="Search by name or SKU..." onkeyup="applyProductFilters()">
+                <select id="categoryFilter" onchange="applyProductFilters()">
+                    <option value="">All Categories</option>
+                </select>
+                <select id="stockFilter" onchange="applyProductFilters()">
+                    <option value="">All Stock Levels</option>
+                    <option value="in_stock">In Stock</option>
+                    <option value="low_stock">Low Stock</option>
+                    <option value="out_of_stock">Out of Stock</option>
+                </select>
+                <select id="sortBy" onchange="applyProductFilters()">
+                    <option value="name_asc">Name (A-Z)</option>
+                    <option value="name_desc">Name (Z-A)</option>
+                    <option value="sku_asc">SKU (A-Z)</option>
+                    <option value="sku_desc">SKU (Z-A)</option>
+                    <option value="stock_asc">Stock (Low to High)</option>
+                    <option value="stock_desc">Stock (High to Low)</option>
+                </select>
+            </div>
+            
+            <div id="productsList" class="data-table"></div>
+        </div>
+
+        <!-- Locations Tab -->
+        <div id="locationsTab" class="tab-content">
+            <div class="tab-header">
+                <h2>Locations</h2>
+                <button onclick="showAddLocation()" class="btn-primary">+ Add Location</button>
+            </div>
+            
+            <!-- Sub-tabs for Locations -->
+            <div class="sub-nav">
+                <button onclick="showLocationSubTab('list')" class="sub-nav-btn active" data-subtab="list">Locations List</button>
+                <button onclick="showLocationSubTab('stock')" class="sub-nav-btn" data-subtab="stock">Stock by Location</button>
+            </div>
+            
+            <!-- Locations List Sub-tab -->
+            <div id="locationsListSubTab" class="sub-tab-content active">
+                <!-- Filters and Sorting for Locations List -->
+                <div class="filters-bar">
+                    <input type="text" id="locationSearch" placeholder="Search by name..." onkeyup="applyLocationFilters()">
+                    <select id="locationTypeFilter" onchange="applyLocationFilters()">
+                        <option value="">All Types</option>
+                        <option value="warehouse">Warehouse</option>
+                        <option value="rack">Rack</option>
+                        <option value="floor_area">Floor Area</option>
+                    </select>
+                    <select id="locationStatusFilter" onchange="applyLocationFilters()">
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="archived">Archived</option>
+                    </select>
+                    <select id="locationSortBy" onchange="applyLocationFilters()">
+                        <option value="name_asc">Name (A-Z)</option>
+                        <option value="name_desc">Name (Z-A)</option>
+                        <option value="type_asc">Type (A-Z)</option>
+                        <option value="type_desc">Type (Z-A)</option>
+                    </select>
+                </div>
+                <div id="locationsList" class="data-table"></div>
+            </div>
+            
+            <!-- Stock by Location Sub-tab -->
+            <div id="locationsStockSubTab" class="sub-tab-content">
+                <!-- Filters and Sorting for Stock by Location -->
+                <div class="filters-bar">
+                    <input type="text" id="stockLocationSearch" placeholder="Search by location or product..." onkeyup="applyStockByLocationFilters()">
+                    <select id="stockLocationFilter" onchange="applyStockByLocationFilters()">
+                        <option value="">All Locations</option>
+                    </select>
+                    <select id="stockLevelFilter" onchange="applyStockByLocationFilters()">
+                        <option value="">All Stock Levels</option>
+                        <option value="in_stock">In Stock</option>
+                        <option value="low_stock">Low Stock</option>
+                    </select>
+                    <select id="stockSortBy" onchange="applyStockByLocationFilters()">
+                        <option value="location_asc">Location (A-Z)</option>
+                        <option value="location_desc">Location (Z-A)</option>
+                        <option value="product_asc">Product (A-Z)</option>
+                        <option value="product_desc">Product (Z-A)</option>
+                        <option value="quantity_asc">Quantity (Low to High)</option>
+                        <option value="quantity_desc">Quantity (High to Low)</option>
+                    </select>
+                </div>
+                <div id="stockByLocationList" class="data-table"></div>
+            </div>
+        </div>
+
+        <!-- Receipts Tab -->
+        <div id="receiptsTab" class="tab-content">
+            <div class="tab-header">
+                <h2>Receipts (Incoming Goods)</h2>
+                <button onclick="showAddReceipt()" class="btn-primary">+ Create Receipt</button>
+            </div>
+            
+            <!-- Filters and Sorting -->
+            <div class="filters-bar">
+                <input type="text" id="receiptSearch" placeholder="Search by supplier or ID..." onkeyup="applyReceiptFilters()">
+                <select id="receiptStatusFilter" onchange="applyReceiptFilters()">
+                    <option value="">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="validated">Validated</option>
+                </select>
+                <select id="receiptSortBy" onchange="applyReceiptFilters()">
+                    <option value="date_desc">Date (Newest First)</option>
+                    <option value="date_asc">Date (Oldest First)</option>
+                    <option value="supplier_asc">Supplier (A-Z)</option>
+                    <option value="supplier_desc">Supplier (Z-A)</option>
+                </select>
+            </div>
+            
+            <div id="receiptsList" class="data-table"></div>
+        </div>
+
+        <!-- Deliveries Tab -->
+        <div id="deliveriesTab" class="tab-content">
+            <div class="tab-header">
+                <h2>Delivery Orders (Outgoing Goods)</h2>
+                <button onclick="showAddDelivery()" class="btn-primary">+ Create Delivery</button>
+            </div>
+            
+            <!-- Filters and Sorting -->
+            <div class="filters-bar">
+                <input type="text" id="deliverySearch" placeholder="Search by customer or ID..." onkeyup="applyDeliveryFilters()">
+                <select id="deliveryStatusFilter" onchange="applyDeliveryFilters()">
+                    <option value="">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="validated">Validated</option>
+                </select>
+                <select id="deliverySortBy" onchange="applyDeliveryFilters()">
+                    <option value="date_desc">Date (Newest First)</option>
+                    <option value="date_asc">Date (Oldest First)</option>
+                    <option value="customer_asc">Customer (A-Z)</option>
+                    <option value="customer_desc">Customer (Z-A)</option>
+                </select>
+            </div>
+            
+            <div id="deliveriesList" class="data-table"></div>
+        </div>
+
+        <!-- Transfers Tab -->
+        <div id="transfersTab" class="tab-content">
+            <div class="tab-header">
+                <h2>Stock Transfers (Between Locations)</h2>
+                <button onclick="showAddTransfer()" class="btn-primary">+ Create Transfer</button>
+            </div>
+            
+            <!-- Filters and Sorting -->
+            <div class="filters-bar">
+                <input type="text" id="transferSearch" placeholder="Search by product or ID..." onkeyup="applyTransferFilters()">
+                <select id="transferStatusFilter" onchange="applyTransferFilters()">
+                    <option value="">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="validated">Validated</option>
+                </select>
+                <select id="transferSourceFilter" onchange="applyTransferFilters()">
+                    <option value="">All Source Locations</option>
+                </select>
+                <select id="transferDestFilter" onchange="applyTransferFilters()">
+                    <option value="">All Destination Locations</option>
+                </select>
+                <select id="transferSortBy" onchange="applyTransferFilters()">
+                    <option value="date_desc">Date (Newest First)</option>
+                    <option value="date_asc">Date (Oldest First)</option>
+                    <option value="product_asc">Product (A-Z)</option>
+                    <option value="product_desc">Product (Z-A)</option>
+                    <option value="quantity_asc">Quantity (Low to High)</option>
+                    <option value="quantity_desc">Quantity (High to Low)</option>
+                </select>
+            </div>
+            
+            <div id="transfersList" class="data-table"></div>
+        </div>
+
+        <!-- History Tab -->
+        <div id="historyTab" class="tab-content">
+            <h2>Move History</h2>
+            <div id="historyList" class="data-table"></div>
+        </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="modalOverlay" class="modal-overlay" onclick="closeModal()"></div>
+    
+    <!-- Add Product Modal -->
+    <div id="addProductModal" class="modal">
+        <h3>Add New Product</h3>
+        <input type="text" id="newProductSKU" placeholder="SKU" required>
+        <input type="text" id="newProductName" placeholder="Product Name" required>
+        <input type="text" id="newProductCategory" placeholder="Category" required>
+        <input type="text" id="newProductUnit" placeholder="Unit of Measure (e.g., pieces)" required>
+        <input type="number" id="newProductThreshold" placeholder="Low Stock Threshold" min="0">
+        <input type="number" id="newProductInitialStock" placeholder="Initial Stock Quantity" min="0">
+        <select id="newProductLocation">
+            <option value="">Select Location</option>
+        </select>
+        <div class="modal-buttons">
+            <button onclick="addProduct()" class="btn-primary">Add Product</button>
+            <button onclick="closeModal()" class="btn-secondary">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Edit Product Modal -->
+    <div id="editProductModal" class="modal">
+        <h3>Edit Product</h3>
+        <input type="text" id="editProductSKU" placeholder="SKU" disabled style="background: #f3f4f6;">
+        <input type="text" id="editProductName" placeholder="Product Name" required>
+        <input type="text" id="editProductCategory" placeholder="Category" required>
+        <input type="text" id="editProductUnit" placeholder="Unit of Measure" required>
+        <input type="number" id="editProductThreshold" placeholder="Low Stock Threshold" min="0">
+        <input type="hidden" id="editProductId">
+        <div class="modal-buttons">
+            <button onclick="updateProduct()" class="btn-primary">Update Product</button>
+            <button onclick="closeModal()" class="btn-secondary">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Add Location Modal -->
+    <div id="addLocationModal" class="modal">
+        <h3>Add New Location</h3>
+        <input type="text" id="newLocationName" placeholder="Location Name" required>
+        <select id="newLocationType">
+            <option value="warehouse">Warehouse</option>
+            <option value="rack">Rack</option>
+            <option value="floor_area">Floor Area</option>
+        </select>
+        <div class="modal-buttons">
+            <button onclick="addLocation()" class="btn-primary">Add Location</button>
+            <button onclick="closeModal()" class="btn-secondary">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Add Receipt Modal -->
+    <div id="addReceiptModal" class="modal">
+        <h3>Create Receipt (Incoming Goods)</h3>
+        <input type="text" id="newReceiptSupplier" placeholder="Supplier Name" required>
+        <input type="text" id="newReceiptContact" placeholder="Supplier Contact (optional)">
+        <select id="newReceiptProduct">
+            <option value="">Select Product</option>
+        </select>
+        <select id="newReceiptLocation">
+            <option value="">Select Location</option>
+        </select>
+        <input type="number" id="newReceiptQuantity" placeholder="Quantity" min="1" required>
+        <div class="modal-buttons">
+            <button onclick="addReceipt()" class="btn-primary">Create Receipt</button>
+            <button onclick="closeModal()" class="btn-secondary">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Add Delivery Modal -->
+    <div id="addDeliveryModal" class="modal">
+        <h3>Create Delivery Order (Outgoing Goods)</h3>
+        <input type="text" id="newDeliveryCustomer" placeholder="Customer Name" required>
+        <input type="text" id="newDeliveryContact" placeholder="Customer Contact (optional)">
+        <select id="newDeliveryProduct">
+            <option value="">Select Product</option>
+        </select>
+        <select id="newDeliveryLocation">
+            <option value="">Select Location</option>
+        </select>
+        <input type="number" id="newDeliveryQuantity" placeholder="Quantity" min="1" required>
+        <div class="modal-buttons">
+            <button onclick="addDelivery()" class="btn-primary">Create Delivery</button>
+            <button onclick="closeModal()" class="btn-secondary">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Add Transfer Modal -->
+    <div id="addTransferModal" class="modal">
+        <h3>Create Stock Transfer</h3>
+        <select id="newTransferProduct">
+            <option value="">Select Product</option>
+        </select>
+        <select id="newTransferSourceLocation">
+            <option value="">From Location</option>
+        </select>
+        <select id="newTransferDestLocation">
+            <option value="">To Location</option>
+        </select>
+        <input type="number" id="newTransferQuantity" placeholder="Quantity" min="1" required>
+        <div class="modal-buttons">
+            <button onclick="addTransfer()" class="btn-primary">Create Transfer</button>
+            <button onclick="closeModal()" class="btn-secondary">Cancel</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
