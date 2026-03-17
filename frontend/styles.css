@@ -540,6 +540,13 @@ body.light-mode {
     text-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
 }
 
+.tab-header .btn-primary {
+    width: auto;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
 /* KPI Cards */
 .kpi-grid {
     display: grid;
