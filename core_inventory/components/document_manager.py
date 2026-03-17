@@ -716,13 +716,21 @@ class DocumentManager:
             
             transfers = query.all()
             for transfer in transfers:
+                # Fetch product and location names
+                product = self.db.query(Product).filter(Product.id == transfer.product_id).first()
+                source_location = self.db.query(Location).filter(Location.id == transfer.source_location_id).first()
+                dest_location = self.db.query(Location).filter(Location.id == transfer.destination_location_id).first()
+                
                 results.append({
                     "id": str(transfer.id),
                     "document_type": "transfer",
                     "status": transfer.status.value,
                     "product_id": str(transfer.product_id),
+                    "product_name": product.name if product else "Unknown Product",
                     "source_location_id": str(transfer.source_location_id),
+                    "source_location_name": source_location.name if source_location else "Unknown Location",
                     "destination_location_id": str(transfer.destination_location_id),
+                    "destination_location_name": dest_location.name if dest_location else "Unknown Location",
                     "quantity": transfer.quantity,
                     "created_by": str(transfer.created_by),
                     "created_at": transfer.created_at.isoformat(),

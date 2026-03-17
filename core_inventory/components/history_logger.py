@@ -214,10 +214,16 @@ class HistoryLogger:
         # Convert to dictionaries
         history_entries = []
         for entry in results:
+            # Fetch product and location names
+            product = self.db.query(Product).filter(Product.id == entry.product_id).first()
+            location = self.db.query(Location).filter(Location.id == entry.location_id).first()
+            
             history_entries.append({
                 "id": str(entry.id),
                 "product_id": str(entry.product_id),
+                "product_name": product.name if product else "Unknown Product",
                 "location_id": str(entry.location_id),
+                "location_name": location.name if location else "Unknown Location",
                 "quantity_change": entry.quantity_change,
                 "document_type": entry.document_type.value,
                 "document_id": entry.document_id,

@@ -15,6 +15,7 @@ from core_inventory.components.document_manager import DocumentManager, Document
 from core_inventory.components.validator import Validator, ValidationError
 from core_inventory.components.history_logger import HistoryLogger, HistoryError
 from core_inventory.components.dashboard import Dashboard, DashboardError
+from core_inventory.utils.email_service import EmailService, EmailError
 
 load_dotenv()
 
@@ -195,12 +196,29 @@ def logout():
 def request_password_reset():
     """Request password reset endpoint."""
     data = request.get_json()
+    email = data.get('email')
+    
+    if not email:
+        return jsonify({'error': {'message': 'Email is required', 'code': 'MISSING_EMAIL'}}), 400
+    
     db = next(get_db())
     try:
         authenticator = Authenticator(db)
-        otp = authenticator.request_password_reset(email=data.get('email'))
-        # In production, this would send an email. For now, return OTP for testing
-        return jsonify({'message': 'Password reset OTP sent', 'otp': otp}), 200
+        otp = authenticator.request_password_reset(email=email)
+        
+        # Try to send email
+        email_service = EmailService()
+        try:
+            email_service.send_password_reset_email(email, otp)
+            return jsonify({'message': 'Password reset code sent to your email'}), 200
+        except EmailError as e:
+            # If email fails, return OTP in response for testing/fallback
+            print(f"Email sending failed: {e}")
+            return jsonify({
+                'message': 'Email service unavailable. Your reset code is provided below.',
+                'otp': otp,
+                'note': 'Please configure email settings for production use.'
+            }), 200
     finally:
         db.close()
 

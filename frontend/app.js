@@ -5,6 +5,13 @@ let currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
+    // Load theme preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+        document.body.classList.add('light-mode');
+        updateThemeIcon();
+    }
+    
     if (sessionToken) {
         showDashboard();
         loadDashboardData();
@@ -42,7 +49,7 @@ async function apiCall(endpoint, method = 'GET', body = null) {
         
         return data;
     } catch (error) {
-        alert('Error: ' + error.message);
+        console.error('API Error:', error.message);
         throw error;
     }
 }
@@ -86,7 +93,6 @@ async function signup() {
     
     try {
         await apiCall('/auth/signup', 'POST', { name, email, password });
-        alert('Account created successfully! Please login.');
         showLogin();
     } catch (error) {
         console.error('Signup failed:', error);
@@ -102,6 +108,75 @@ function logout() {
     showLogin();
 }
 
+// Password Reset
+let resetEmailForOTP = ''; // Store email for OTP verification
+
+async function requestPasswordReset() {
+    const email = document.getElementById('resetEmail').value;
+    
+    if (!email) {
+        alert('Please enter your email address');
+        return;
+    }
+    
+    try {
+        const data = await apiCall('/auth/password-reset/request', 'POST', { email });
+        resetEmailForOTP = email;
+        
+        // Check if OTP was sent via email or returned in response
+        if (data.otp) {
+            // Email service not configured - show OTP in alert
+            alert(`Password reset code: ${data.otp}\n\n${data.note || 'For testing purposes only.'}\n\nPlease enter this code on the next screen.`);
+        } else {
+            // Email sent successfully
+            alert('Password reset code sent to your email!\n\nPlease check your inbox and enter the 6-digit code on the next screen.');
+        }
+        
+        showOTPVerification();
+    } catch (error) {
+        console.error('Password reset request failed:', error);
+    }
+}
+
+async function resetPassword() {
+    const otp = document.getElementById('resetOTP').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (!otp || !newPassword || !confirmPassword) {
+        alert('Please fill in all fields');
+        return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+        alert('Passwords do not match');
+        return;
+    }
+    
+    if (newPassword.length < 8) {
+        alert('Password must be at least 8 characters long');
+        return;
+    }
+    
+    try {
+        await apiCall('/auth/password-reset/confirm', 'POST', { 
+            otp, 
+            new_password: newPassword 
+        });
+        
+        // Clear form fields
+        document.getElementById('resetEmail').value = '';
+        document.getElementById('resetOTP').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+        resetEmailForOTP = '';
+        
+        showLogin();
+    } catch (error) {
+        console.error('Password reset failed:', error);
+    }
+}
+
 // Screen Navigation
 function showLogin() {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -113,10 +188,27 @@ function showSignup() {
     document.getElementById('signupScreen').classList.add('active');
 }
 
+function showForgotPassword() {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('forgotPasswordScreen').classList.add('active');
+}
+
+function showOTPVerification() {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('otpVerificationScreen').classList.add('active');
+}
+
 function showDashboard() {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById('dashboardScreen').classList.add('active');
     document.getElementById('userName').textContent = currentUser.name || 'User';
+    
+    // Update user dropdown info
+    const userNameDropdown = document.getElementById('userNameDropdown');
+    const userEmailDropdown = document.getElementById('userEmailDropdown');
+    if (userNameDropdown) userNameDropdown.textContent = currentUser.name || 'User';
+    if (userEmailDropdown) userEmailDropdown.textContent = currentUser.email || 'user@example.com';
+    
     loadDashboardData();
 }
 
@@ -280,8 +372,7 @@ async function applyProductFilters() {
         if (stockFilter === 'in_stock') {
             matchesStock = (product.totalStock || 0) > (product.low_stock_threshold || 0);
         } else if (stockFilter === 'low_stock') {
-            matchesStock = (product.totalStock || 0) > 0 && 
-                          (product.totalStock || 0) <= (product.low_stock_threshold || 0);
+            matchesStock = (product.totalStock || 0) <= (product.low_stock_threshold || 0);
         } else if (stockFilter === 'out_of_stock') {
             matchesStock = (product.totalStock || 0) === 0;
         }
@@ -347,7 +438,6 @@ async function updateProduct() {
         await apiCall(`/products/${productId}`, 'PUT', data);
         
         closeModal();
-        alert('Product updated successfully!');
         loadProducts();
     } catch (error) {
         console.error('Failed to update product:', error);
@@ -519,7 +609,6 @@ async function validateReceipt(receiptId) {
     
     try {
         await apiCall(`/documents/receipts/${receiptId}/validate`, 'POST');
-        alert('Receipt validated successfully!');
         loadReceipts();
         loadDashboardData();
         
@@ -577,7 +666,6 @@ async function validateDelivery(deliveryId) {
     
     try {
         await apiCall(`/documents/delivery-orders/${deliveryId}/validate`, 'POST');
-        alert('Delivery order validated successfully!');
         loadDeliveries();
         loadDashboardData();
         
@@ -686,8 +774,6 @@ async function addProduct() {
         // Switch to products tab and reload
         showTab('products');
         
-        alert('Product added successfully!');
-        
         // Reload dashboard data
         loadDashboardData();
     } catch (error) {
@@ -717,8 +803,6 @@ async function addLocation() {
         
         // Switch to locations tab and reload
         showTab('locations');
-        
-        alert('Location added successfully!');
     } catch (error) {
         console.error('Failed to add location:', error);
         alert('Failed to add location: ' + error.message);
@@ -799,8 +883,6 @@ async function addReceipt() {
         // Switch to receipts tab and reload
         showTab('receipts');
         
-        alert('Receipt created successfully! Don\'t forget to validate it to update stock.');
-        
         // Reload dashboard
         loadDashboardData();
     } catch (error) {
@@ -857,8 +939,6 @@ async function addDelivery() {
         // Switch to deliveries tab and reload
         showTab('deliveries');
         
-        alert('Delivery order created successfully! Don\'t forget to validate it to update stock.');
-        
         // Reload dashboard
         loadDashboardData();
     } catch (error) {
@@ -868,48 +948,6 @@ async function addDelivery() {
 }
 
 // Transfer Functions
-async function loadTransfers() {
-    try {
-        const transfers = await apiCall('/documents?document_type=transfer');
-        const container = document.getElementById('transfersList');
-        
-        if (transfers.length === 0) {
-            container.innerHTML = '<div class="empty-state"><h3>No transfers yet</h3><p>Create your first transfer to move stock between locations</p></div>';
-            return;
-        }
-        
-        let html = '<div class="table-row header">';
-        html += '<div class="table-cell">ID</div>';
-        html += '<div class="table-cell">Product</div>';
-        html += '<div class="table-cell">From → To</div>';
-        html += '<div class="table-cell">Quantity</div>';
-        html += '<div class="table-cell">Status</div>';
-        html += '<div class="table-cell">Created</div>';
-        html += '<div class="table-cell">Actions</div>';
-        html += '</div>';
-        
-        transfers.forEach(transfer => {
-            html += '<div class="table-row">';
-            html += `<div class="table-cell"><strong>${transfer.id.substring(0, 8)}</strong></div>`;
-            html += `<div class="table-cell">${transfer.product_name || transfer.product_id.substring(0, 8)}</div>`;
-            html += `<div class="table-cell">${transfer.source_location_name || 'Source'} → ${transfer.destination_location_name || 'Dest'}</div>`;
-            html += `<div class="table-cell">${transfer.quantity}</div>`;
-            html += `<div class="table-cell"><span class="badge ${transfer.status}">${transfer.status}</span></div>`;
-            html += `<div class="table-cell">${new Date(transfer.created_at).toLocaleDateString()}</div>`;
-            html += '<div class="table-cell">';
-            if (transfer.status === 'pending') {
-                html += `<button class="btn-small btn-validate" onclick="validateTransfer('${transfer.id}')">Validate</button>`;
-            }
-            html += '</div>';
-            html += '</div>';
-        });
-        
-        container.innerHTML = html;
-    } catch (error) {
-        console.error('Failed to load transfers:', error);
-    }
-}
-
 async function showAddTransfer() {
     // Load products and locations for dropdowns
     await loadProductsForDropdown('newTransferProduct');
@@ -957,8 +995,6 @@ async function addTransfer() {
         // Switch to transfers tab and reload
         showTab('transfers');
         
-        alert('Transfer created successfully! Don\'t forget to validate it to move the stock.');
-        
         // Reload dashboard
         loadDashboardData();
     } catch (error) {
@@ -972,7 +1008,6 @@ async function validateTransfer(transferId) {
     
     try {
         await apiCall(`/documents/transfers/${transferId}/validate`, 'POST');
-        alert('Transfer validated successfully!');
         loadTransfers();
         loadDashboardData();
         
@@ -1473,7 +1508,14 @@ async function loadTransfers() {
 // ===== SIDEBAR AND USER MENU TOGGLE =====
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
-    sidebar.classList.toggle('active');
+    
+    // For mobile (width <= 768px), use 'active' class
+    if (window.innerWidth <= 768) {
+        sidebar.classList.toggle('active');
+    } else {
+        // For desktop, use 'collapsed' class
+        sidebar.classList.toggle('collapsed');
+    }
 }
 
 function toggleUserMenu() {
@@ -1502,7 +1544,22 @@ document.addEventListener('click', function(event) {
 });
 
 function showAccountSettings() {
-    alert('Account settings feature coming soon!');
     toggleUserMenu();
 }
 
+
+// Theme Toggle
+function toggleTheme() {
+    document.body.classList.toggle('light-mode');
+    const isLight = document.body.classList.contains('light-mode');
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    updateThemeIcon();
+}
+
+function updateThemeIcon() {
+    const themeToggle = document.querySelector('.theme-toggle');
+    if (themeToggle) {
+        const isLight = document.body.classList.contains('light-mode');
+        themeToggle.textContent = isLight ? '☀️' : '🌙';
+    }
+}

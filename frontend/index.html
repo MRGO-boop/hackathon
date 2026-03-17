@@ -18,6 +18,37 @@
                 <input type="password" id="loginPassword" placeholder="Password" required>
                 <button onclick="login()" class="btn-primary">Login</button>
                 <p class="link" onclick="showSignup()">Don't have an account? Sign up</p>
+                <p class="link" onclick="showForgotPassword()">Forgot password?</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forgot Password Screen -->
+    <div id="forgotPasswordScreen" class="screen">
+        <div class="login-container">
+            <h1>Reset Password</h1>
+            <p class="subtitle">Enter your email to receive a reset code</p>
+            
+            <div class="login-form">
+                <input type="email" id="resetEmail" placeholder="Email" required>
+                <button onclick="requestPasswordReset()" class="btn-primary">Send Reset Code</button>
+                <p class="link" onclick="showLogin()">Back to Login</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- OTP Verification Screen -->
+    <div id="otpVerificationScreen" class="screen">
+        <div class="login-container">
+            <h1>Enter Reset Code</h1>
+            <p class="subtitle">Check your email for the 6-digit code</p>
+            
+            <div class="login-form">
+                <input type="text" id="resetOTP" placeholder="6-Digit Code" maxlength="6" required>
+                <input type="password" id="newPassword" placeholder="New Password" required>
+                <input type="password" id="confirmPassword" placeholder="Confirm New Password" required>
+                <button onclick="resetPassword()" class="btn-primary">Reset Password</button>
+                <p class="link" onclick="showLogin()">Back to Login</p>
             </div>
         </div>
     </div>
@@ -46,25 +77,26 @@
                 <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
                 <h1>CoreInventory</h1>
                 <div class="user-menu">
+                    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">🌙</button>
                     <span id="userName">User</span>
                     <button class="user-avatar" onclick="toggleUserMenu()">👤</button>
                 </div>
             </div>
-            
-            <!-- User Menu Dropdown -->
-            <div id="userMenuDropdown" class="user-menu-dropdown">
-                <div class="user-info">
-                    <div class="user-avatar-large">👤</div>
-                    <div class="user-details">
-                        <p class="user-name" id="userNameDropdown">User</p>
-                        <p class="user-email" id="userEmailDropdown">user@example.com</p>
-                    </div>
-                </div>
-                <div class="user-menu-divider"></div>
-                <button class="user-menu-item" onclick="showAccountSettings()">⚙️ Account Settings</button>
-                <button class="user-menu-item" onclick="logout()" style="color: var(--danger);">🚪 Logout</button>
-            </div>
         </header>
+        
+        <!-- User Menu Dropdown (outside header) -->
+        <div id="userMenuDropdown" class="user-menu-dropdown">
+            <div class="user-info">
+                <div class="user-avatar-large">👤</div>
+                <div class="user-details">
+                    <p class="user-name" id="userNameDropdown">User</p>
+                    <p class="user-email" id="userEmailDropdown">user@example.com</p>
+                </div>
+            </div>
+            <div class="user-menu-divider"></div>
+            <button class="user-menu-item" onclick="showAccountSettings()">⚙️ Account Settings</button>
+            <button class="user-menu-item" onclick="logout()" style="color: var(--danger);">🚪 Logout</button>
+        </div>
 
         <!-- Main Container with Sidebar -->
         <div class="main-container">

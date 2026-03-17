@@ -46,7 +46,7 @@ class Dashboard:
         
         Only counts products that have a configured low_stock_threshold.
         A product is considered low stock if its total stock across all
-        locations is below its threshold.
+        locations is below its threshold (but not zero).
         
         Returns:
             int: Number of products with stock below threshold
@@ -67,8 +67,8 @@ class Dashboard:
             # Handle case where product has no stock records
             total_stock = total_stock if total_stock is not None else 0
             
-            # Check if below threshold
-            if total_stock < product.low_stock_threshold:
+            # Check if below threshold but not zero
+            if 0 < total_stock < product.low_stock_threshold:
                 low_stock_count += 1
         
         return low_stock_count
